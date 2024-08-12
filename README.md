@@ -17,7 +17,7 @@
 
 <h3>Libraries Required</h3>
 
-<p>These dependencies can be installed using <code>pip</code>:</p>
+<p>The dependencies can be installed using <code>pip</code>:</p>
 
 <pre><code>pip install -r requirements.txt</code></pre>
 
