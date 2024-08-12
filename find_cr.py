@@ -26,10 +26,11 @@ from bs4 import BeautifulSoup
 
 
 def get_corner_reflector_info(kmz = False, csv = False):
+    now = datetime.now()
     response = requests.get('https://uavsar.jpl.nasa.gov/cgi-bin/calibration.pl')
     soup = BeautifulSoup(response.text, 'html.parser')
     kmz_url = 'https://uavsar.jpl.nasa.gov' + soup.find('div', attrs = {'class' : 'main wrapper clearfix'}).findAll('a')[-5].get('href')
-    csv_url = f'https://uavsar.jpl.nasa.gov/cgi-bin/corner-reflectors.pl?date=2024-08-11+00!00&project=rosamond_plate_location'
+    csv_url = f'https://uavsar.jpl.nasa.gov/cgi-bin/corner-reflectors.pl?date={now.strftime("%Y")}-{now.strftime("%m")}-{now.strftime("%d")}+00!00&project=rosamond_plate_location'
     if kmz:
         wget.download(kmz_url)
     elif csv:
@@ -95,8 +96,9 @@ def create_inc_array_dem(llh_file, lkv_file, row_2x8 = 7669, col_2x8 = 4937):
 
 def create_inc_array(min_look_angle = 21.32159622, max_look_angle = 66.17122143, row_1x1 = 61497, col_1x1 = 4937):
     '''
-    This fucntion takes minimum and maximum look angle provided in .ann metadata file. It can be assumed that angle varies linearly from min to max across image width.
+    This fucntion takes minimum and maximum look angle provided in .ann metadata file. Assuming that angle varies linearly from min to max across image width.
     '''
     array = np.linspace(min_look_angle, max_look_angle, col_1x1)
     stacked_inc_array = np.tile(array, (row_1x1, 1))
     return stacked_inc_array
+
