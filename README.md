@@ -8,7 +8,6 @@
 <body>
 
 <h1>Polarimetric SAR Calibration</h1>
-<h2>Author : Subham Raj</h2>
 
 
 <h2>Overview</h2>
