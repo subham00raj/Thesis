@@ -100,6 +100,3 @@ def create_inc_array(min_look_angle = 21.32159622, max_look_angle = 66.17122143,
     array = np.linspace(min_look_angle, max_look_angle, col_1x1)
     stacked_inc_array = np.tile(array, (row_1x1, 1))
     return stacked_inc_array
-
-def get(url = False):
-    pass
