@@ -16,21 +16,10 @@
 <h2>Prerequisites</h2>
 
 <h3>Libraries Required</h3>
-<ul>
-    <li><code>os</code></li>
-    <li><code>wget</code></li>
-    <li><code>datetime</code></li>
-    <li><code>requests</code></li>
-    <li><code>struct</code></li>
-    <li><code>tqdm</code></li>
-    <li><code>numpy</code></li>
-    <li><code>pandas</code></li>
-    <li><code>uavsar_pytools.incidence_angle</code></li>
-    <li><code>bs4</code> (BeautifulSoup)</li>
-</ul>
-<p>These libraries can be installed using <code>pip</code>:</p>
 
-<pre><code>pip install wget requests tqdm numpy pandas uavsar_pytools beautifulsoup4</code></pre>
+<p>These dependencies can be installed using <code>pip</code>:</p>
+
+<pre><code>pip install -r requirements.txt</code></pre>
 
 <h3>Input Files</h3>
 <ul>
