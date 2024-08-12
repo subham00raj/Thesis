@@ -22,7 +22,7 @@
 
 <h3>Input Files</h3>
 <ul>
-    <li><strong>Corner Reflector Data (.csv)</strong></li>
+    <li><strong>Corner Reflector Data:</strong> A file containing all corner reflector info and can be downloaded using <code>get_corner_reflector_info</code> </li>
     <li><strong>LLH File:</strong> A file containing Latitude, Longitude, and Height information.</li>
     <li><strong>LKV File:</strong> A file containing Look Vector information.</li>
 </ul>
