@@ -8,6 +8,8 @@
 <body>
 
 <h1>Polarimetric SAR Calibration</h1>
+<h2>Author : Subham Raj</h2>
+
 
 <h2>Overview</h2>
 <p>This Python script is designed for polarimetric Synthetic Aperture Radar (SAR) calibration using corner reflector data. It processes SAR data, specifically for detecting corner reflectors, by utilizing various input files including Corner Reflector Data in <code>.csv</code> format, LLH file, and LKV file. The script primarily operates with data obtained from the UAVSAR project and includes functions to download, process, and generate corner reflector detection images.</p>
