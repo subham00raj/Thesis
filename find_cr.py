@@ -101,5 +101,5 @@ def create_inc_array(min_look_angle = 21.32159622, max_look_angle = 66.17122143,
     stacked_inc_array = np.tile(array, (row_1x1, 1))
     return stacked_inc_array
 
-def get(url):
+def get(url = False):
     pass
