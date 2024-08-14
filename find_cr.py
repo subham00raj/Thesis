@@ -36,9 +36,24 @@ def get_corner_reflector_info(kmz = False, csv = False):
     elif csv:
         wget.download(csv_url)
 
-def get_uavsar_data():
-    pass
 
+def get_uavsar_data(flight_track_id, DT, date, multilooked = '1x1'):
+    pols = ['HH', 'HV', 'VH', 'VV']
+    
+    for file in pols:
+        print(f'Downloading SLC data in {file} polarization')
+        slc_url = f'https://downloaduav2.jpl.nasa.gov/Release26/Rosamd_35012_04/Rosamd_35012_{flight_track_id}_00{DT}_{date}_L090{file}_04_BC_s1_{multilooked}.slc'
+        ann_url = f'https://downloaduav2.jpl.nasa.gov/Release26/Rosamd_35012_04/Rosamd_35012_{flight_track_id}_00{DT}_{date}_L090{file}_04_BC.ann'
+        wget.download(slc_url)
+        wget.download(ann_url)
+
+    print('Downloading Look Vector File')
+    wget.download('https://downloaduav2.jpl.nasa.gov/Release26/Rosamd_35012_04/Rosamd_35012_04_BC_s1_2x8.lkv')
+    print('Downloading Lat Long File')
+    wget.download('https://downloaduav2.jpl.nasa.gov/Release26/Rosamd_35012_04/Rosamd_35012_04_BC_s1_2x8.llh')
+    print('Download Complete.')
+    
+get_uavsar_data(flight_track_id = 16074, DT = 5, date = 160920, multilooked = '1x1')
 
 def create_xyz_array(file_path, rows, cols, stacked = False):
     data = np.memmap(file_path, dtype=np.float32)
@@ -104,4 +119,5 @@ def create_inc_array(min_look_angle = 21.32159622, max_look_angle = 66.17122143,
     array = np.linspace(min_look_angle, max_look_angle, col_1x1)
     stacked_inc_array = np.tile(array, (row_1x1, 1))
     return stacked_inc_array
+
 
