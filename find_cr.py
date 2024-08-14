@@ -108,7 +108,7 @@ def create_inc_array_dem(llh_file, lkv_file, row_2x8 = 7669, col_2x8 = 4937):
                 row += 1
 
     inc_arr = calc_inc_angle(dem, lkv_x, lkv_y, lkv_z)
-    return inc_arr
+    return np.fliplr(inc_arr)
 
 
 def create_inc_array_flat(min_look_angle = 21.32159622, max_look_angle = 66.17122143, row_1x1 = 61497, col_1x1 = 4937):
@@ -117,4 +117,5 @@ def create_inc_array_flat(min_look_angle = 21.32159622, max_look_angle = 66.1712
     '''
     array = np.linspace(min_look_angle, max_look_angle, col_1x1)
     stacked_inc_array = np.tile(array, (row_1x1, 1))
-    return stacked_inc_array
+    return np.fliplr(stacked_inc_array)
+
