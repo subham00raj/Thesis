@@ -53,7 +53,6 @@ def get_uavsar_data(flight_track_id, DT, date, multilooked = '1x1'):
     wget.download('https://downloaduav2.jpl.nasa.gov/Release26/Rosamd_35012_04/Rosamd_35012_04_BC_s1_2x8.llh')
     print('Download Complete.')
     
-get_uavsar_data(flight_track_id = 16074, DT = 5, date = 160920, multilooked = '1x1')
 
 def create_xyz_array(file_path, rows, cols, stacked = False):
     data = np.memmap(file_path, dtype=np.float32)
@@ -119,5 +118,3 @@ def create_inc_array(min_look_angle = 21.32159622, max_look_angle = 66.17122143,
     array = np.linspace(min_look_angle, max_look_angle, col_1x1)
     stacked_inc_array = np.tile(array, (row_1x1, 1))
     return stacked_inc_array
-
-
