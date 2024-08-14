@@ -59,17 +59,24 @@ def get_uavsar_data(flight_track_id, DT, date, multilooked = '1x1'):
     print('Download Complete.')
     
 
-def create_xyz_array(file_path, rows, cols, stacked = False):
+def create_xyz_array(file_path, rows, cols, datatype = 'array'):
     data = np.memmap(file_path, dtype=np.float32)
     data = data.reshape(-1, 3)
-    if stacked:
+    if datatype == 'stacked':
         x = np.array(data)[:,0].reshape((rows,cols))
         y = np.array(data)[:,1].reshape((rows,cols))
         z = np.array(data)[:,2].reshape((rows,cols))
         return np.dstack((x, y, z))
 
-    else:
-        return np.array(data)        
+    elif datatype == 'dataframe':
+        return pd.DataFrame(data, columns = ['Latitude', 'Longitude', 'Height'])
+
+    elif datatype == 'array':
+        return np.array(data)
+
+    else: 
+        raise ValueError(f"Invalid datatype specified: {datatype}. Choose from 'stacked', 'dataframe', or 'array'.")
+        
 
 
 def create_inc_array_dem(llh_file, lkv_file, row_2x8 = 7669, col_2x8 = 4937, left_look = True):
@@ -113,7 +120,7 @@ def create_inc_array_dem(llh_file, lkv_file, row_2x8 = 7669, col_2x8 = 4937, lef
                 row += 1
 
     inc_arr = calc_inc_angle(dem, lkv_x, lkv_y, lkv_z)
-    
+
     if left_look:
         return np.fliplr(inc_arr)
     return inc_arr
