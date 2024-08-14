@@ -113,7 +113,7 @@ def create_inc_array_dem(llh_file, lkv_file, row_2x8 = 7669, col_2x8 = 4937):
 
 def create_inc_array(min_look_angle = 21.32159622, max_look_angle = 66.17122143, row_1x1 = 61497, col_1x1 = 4937):
     '''
-    This fucntion takes minimum and maximum look angle provided in .ann metadata file. Assuming that angle varies linearly from min to max across image width.
+    This fucntion takes minimum and maximum look angle provided in .ann metadata file. Assuming flat terrain i.e., angle varies linearly from min to max across image width.
     '''
     array = np.linspace(min_look_angle, max_look_angle, col_1x1)
     stacked_inc_array = np.tile(array, (row_1x1, 1))
