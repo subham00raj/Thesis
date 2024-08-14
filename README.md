@@ -14,7 +14,7 @@
 <p>These libraries can be installed using <code>pip</code>:</p>
 <pre><code>pip install -r requirements.txt</code></pre>
 <h3>Input Files</h3>
-These files can be downloaded using <code> get_uavsar_data </code> function. This fetches the following files
+These files can be downloaded using <code> get_uavsar_data </code> and <code> get_corner_reflector_data </code> function. This fetches the following files
 <ul>
     <li><strong>SLC File:</strong> UAVSAR quad pol image data in complex binary format.</li>
     <li><strong>LLH File:</strong> A file containing Latitude, Longitude, and Height information.</li>
