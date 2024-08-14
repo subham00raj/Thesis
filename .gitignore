@@ -2,6 +2,8 @@
 *.txt
 *.csv
 *.ann
+*.llh
+*.lkv
 *.slc
 *.md
 !requirements.txt

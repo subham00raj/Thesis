@@ -63,16 +63,16 @@ def create_xyz_array(file_path, rows, cols, stacked = False):
     data = np.memmap(file_path, dtype=np.float32)
     data = data.reshape(-1, 3)
     if stacked:
-        x = np.array(data)[:0].reshape((rows,cols))
-        y = np.array(data)[:1].reshape((rows,cols))
-        z = np.array(data)[:2].reshape((rows,cols))
+        x = np.array(data)[:,0].reshape((rows,cols))
+        y = np.array(data)[:,1].reshape((rows,cols))
+        z = np.array(data)[:,2].reshape((rows,cols))
         return np.dstack((x, y, z))
 
     else:
         return np.array(data)        
 
 
-def create_inc_array_dem(llh_file, lkv_file, row_2x8 = 7669, col_2x8 = 4937):
+def create_inc_array_dem(llh_file, lkv_file, row_2x8 = 7669, col_2x8 = 4937, left_look = True):
     '''
     This function uses in built uavsar module to create incidence array for 2x8 SLC
     '''
@@ -113,7 +113,10 @@ def create_inc_array_dem(llh_file, lkv_file, row_2x8 = 7669, col_2x8 = 4937):
                 row += 1
 
     inc_arr = calc_inc_angle(dem, lkv_x, lkv_y, lkv_z)
-    return np.fliplr(inc_arr)
+    
+    if left_look:
+        return np.fliplr(inc_arr)
+    return inc_arr
 
 
 def create_inc_array_flat(min_look_angle = 21.32159622, max_look_angle = 66.17122143, row_1x1 = 61497, col_1x1 = 4937):
@@ -123,5 +126,3 @@ def create_inc_array_flat(min_look_angle = 21.32159622, max_look_angle = 66.1712
     array = np.linspace(min_look_angle, max_look_angle, col_1x1)
     stacked_inc_array = np.tile(array, (row_1x1, 1))
     return np.fliplr(stacked_inc_array)
-
-get_corner_reflector_data(csv = True)
