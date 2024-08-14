@@ -36,6 +36,9 @@ def get_corner_reflector_info(kmz = False, csv = False):
     elif csv:
         wget.download(csv_url)
 
+def get_uavsar_data():
+    pass
+
 
 def create_xyz_array(file_path, rows, cols, stacked = False):
     data = np.memmap(file_path, dtype=np.float32)
