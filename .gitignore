@@ -3,4 +3,5 @@
 *.csv
 *.ann
 *.slc
+*.md
 !requirements.txt

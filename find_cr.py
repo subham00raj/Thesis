@@ -25,7 +25,7 @@ from bs4 import BeautifulSoup
 
 
 
-def get_corner_reflector_info(kmz = False, csv = False):
+def get_corner_reflector_data(kmz = False, csv = False):
     now = datetime.now()
     response = requests.get('https://uavsar.jpl.nasa.gov/cgi-bin/calibration.pl')
     soup = BeautifulSoup(response.text, 'html.parser')
@@ -35,6 +35,11 @@ def get_corner_reflector_info(kmz = False, csv = False):
         wget.download(kmz_url)
     elif csv:
         wget.download(csv_url)
+        csv_path = f'{now.strftime("%Y")}-{now.strftime("%m")}-{now.strftime("%d")}_0000_Rosamond-corner-reflectors_with_plate_motion.csv'
+        df = pd.read_csv(csv_path)
+        df = df.drop(df.columns[-1], axis = 1)
+        df.columns = ['Corner ID', 'Latitude', 'Longitude', 'Height', 'Azimuth', 'Elevation Angle', 'Side Length']
+        df.to_csv(csv_path)
 
 
 def get_uavsar_data(flight_track_id, DT, date, multilooked = '1x1'):
@@ -119,3 +124,4 @@ def create_inc_array_flat(min_look_angle = 21.32159622, max_look_angle = 66.1712
     stacked_inc_array = np.tile(array, (row_1x1, 1))
     return np.fliplr(stacked_inc_array)
 
+get_corner_reflector_data(csv = True)
