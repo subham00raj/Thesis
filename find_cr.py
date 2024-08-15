@@ -12,7 +12,6 @@ Reference : https://uavsar.jpl.nasa.gov/cgi-bin/calibration.pl
 
 '''
 
-import os
 import wget
 from datetime import datetime
 import requests
@@ -22,6 +21,8 @@ import numpy as np
 import pandas as pd
 from uavsar_pytools.incidence_angle import calc_inc_angle
 from bs4 import BeautifulSoup
+import matplotlib.pyplot as plt
+import torch
 
 
 
@@ -136,3 +137,18 @@ def create_inc_array_flat(min_look_angle = 21.32159622, max_look_angle = 66.1712
     array = np.linspace(min_look_angle, max_look_angle, col_1x1)
     stacked_inc_array = np.tile(array, (row_1x1, 1))
     return np.fliplr(stacked_inc_array)
+
+
+def read_slc(file_path, rows = 61349, cols = 9874, gpu = False):
+    image = np.memmap(file_path, shape = (rows, cols) ,dtype = np.complex64)
+    
+    if gpu:
+        device = torch.device('cuda')
+        array = torch.from_numpy(image).to(device)
+        result = array.cpu()
+        del array
+        torch.cuda.empty_cache()
+        return result
+
+    else:
+        return np.array(image)

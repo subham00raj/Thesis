@@ -6,4 +6,6 @@
 *.lkv
 *.slc
 *.md
+*.whl
+*.ipynb
 !requirements.txt
