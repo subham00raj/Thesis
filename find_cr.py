@@ -11,7 +11,7 @@ Output : Corner Reflector Detected Image
 Reference : https://uavsar.jpl.nasa.gov/cgi-bin/calibration.pl
 
 '''
-
+import os
 import wget
 from datetime import datetime
 import requests
@@ -22,7 +22,6 @@ import pandas as pd
 from uavsar_pytools.incidence_angle import calc_inc_angle
 from bs4 import BeautifulSoup
 import matplotlib.pyplot as plt
-import torch
 
 
 
@@ -32,15 +31,28 @@ def get_corner_reflector_data(file_type = 'csv'):
     soup = BeautifulSoup(response.text, 'html.parser')
     kmz_url = 'https://uavsar.jpl.nasa.gov' + soup.find('div', attrs = {'class' : 'main wrapper clearfix'}).findAll('a')[-5].get('href')
     csv_url = f'https://uavsar.jpl.nasa.gov/cgi-bin/corner-reflectors.pl?date={now.strftime("%Y")}-{now.strftime("%m")}-{now.strftime("%d")}+00!00&project=rosamond_plate_location'
+    
     if file_type == 'kmz':
         wget.download(kmz_url)
+
     elif file_type == 'csv':
-        wget.download(csv_url)
         csv_path = f'{now.strftime("%Y")}-{now.strftime("%m")}-{now.strftime("%d")}_0000_Rosamond-corner-reflectors_with_plate_motion.csv'
-        df = pd.read_csv(csv_path)
-        df = df.drop(df.columns[-1], axis = 1)
-        df.columns = ['Corner ID', 'Latitude', 'Longitude', 'Height', 'Azimuth', 'Elevation Angle', 'Side Length']
-        df.to_csv(csv_path)
+
+        if os.path.exists(csv_path):
+            df = pd.read_csv(csv_path)
+            df = df.drop(df.columns[-1], axis = 1)
+            df.columns = ['Corner ID', 'Latitude', 'Longitude', 'Height', 'Azimuth', 'Elevation Angle', 'Side Length']
+            df.to_csv(csv_path)
+
+            return df
+        else:
+            wget.download(csv_url)
+            df = pd.read_csv(csv_path)
+            df = df.drop(df.columns[-1], axis = 1)
+            df.columns = ['Corner ID', 'Latitude', 'Longitude', 'Height', 'Azimuth', 'Elevation Angle', 'Side Length']
+            df.to_csv(csv_path)
+
+            return df
 
     else:
         raise ValueError(f"Invalid datatype specified: {file_type}. Choose from 'kmz', or 'csv'.")    
@@ -143,6 +155,7 @@ def read_slc(file_path, rows = 61349, cols = 9874, gpu = False):
     image = np.memmap(file_path, shape = (rows, cols) ,dtype = np.complex64)
     
     if gpu:
+        import torch
         device = torch.device('cuda')
         array = torch.from_numpy(image).to(device)
         result = array.cpu()
@@ -152,3 +165,19 @@ def read_slc(file_path, rows = 61349, cols = 9874, gpu = False):
 
     else:
         return np.array(image)
+    
+
+def get_cr_location(llh_file_path):
+    llh_df = create_xyz_array(llh_file_path, rows = 7669, cols = 4937 , datatype = 'dataframe')
+    cr_df = get_corner_reflector_data(file_type = 'csv')
+    pixel_loc = []
+
+    for i in range(len(cr_df)):
+        llh_df['Latitude'] = abs(llh_df['Latitude'] - cr_df['Latitude'][i])
+        llh_df['Longitude'] = abs(llh_df['Longitude'] - cr_df['Longitude'][i])
+
+        pixel_loc.append(llh_df[(llh_df['Latitude'] < 0.001) & (llh_df['Longitude'] < 0.001)].index.tolist())
+
+
+    return pixel_loc
+
