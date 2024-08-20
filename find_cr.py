@@ -56,6 +56,7 @@ def get_corner_reflector_data(file_type = 'csv'):
 
     else:
         raise ValueError(f"Invalid datatype specified: {file_type}. Choose from 'kmz', or 'csv'.")    
+   
 
 
 def get_uavsar_data(flight_track_id, dt, date, multilooked = '1x1'):
@@ -168,15 +169,17 @@ def read_slc(file_path, rows = 61349, cols = 9874, gpu = False):
     
 
 def get_cr_location(llh_file_path):
+    now = datetime.now()
+    csv_path = f'{now.strftime("%Y")}-{now.strftime("%m")}-{now.strftime("%d")}_0000_Rosamond-corner-reflectors_with_plate_motion.csv'
+    cr_df = pd.read_csv(csv_path)
     llh_df = create_xyz_array(llh_file_path, rows = 7669, cols = 4937 , datatype = 'dataframe')
-    cr_df = get_corner_reflector_data(file_type = 'csv')
     pixel_loc = []
 
     for i in range(len(cr_df)):
-        llh_df['Latitude'] = abs(llh_df['Latitude'] - cr_df['Latitude'][i])
-        llh_df['Longitude'] = abs(llh_df['Longitude'] - cr_df['Longitude'][i])
+        llh_df['CR_Latitude'] = abs(llh_df['Latitude'] - cr_df['Latitude'][i])
+        llh_df['CR_Longitude'] = abs(llh_df['Longitude'] - cr_df['Longitude'][i])
 
-        pixel_loc.append(llh_df[(llh_df['Latitude'] < 0.001) & (llh_df['Longitude'] < 0.001)].index.tolist())
+        pixel_loc.append(llh_df[(llh_df['CR_Latitude'] < 0.00001) & (llh_df['CR_Longitude'] < 0.0001)].index.tolist())
 
 
     return pixel_loc
