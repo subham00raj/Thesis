@@ -62,7 +62,7 @@ def multilooked(image, range_pixel=1.6, azimuth_pixel=0.6):
 if __name__ == '__main__':
     coord = [4500, 17500]  # Starting coordinate [x,y]
     size = [3500, 3500]    # Image size [x,y]
-    image_path = r'C:\Users\Vision IAS\Desktop\work\HH.tiff'
+    image_path = r'HH.tiff'
     img1 = image(image_path, start_coordinate=coord, image_size=size)
     img2 = multilooked(image=img1, range_pixel=1.6, azimuth_pixel=0.6)
     

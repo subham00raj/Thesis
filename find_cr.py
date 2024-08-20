@@ -11,72 +11,15 @@ Output : Corner Reflector Detected Image
 Reference : https://uavsar.jpl.nasa.gov/cgi-bin/calibration.pl
 
 '''
-import os
 import read_image
-import wget
 import cv2
-import math
 from datetime import datetime
-import requests
 import struct
 from tqdm import tqdm
 import numpy as np
 import pandas as pd
 from uavsar_pytools.incidence_angle import calc_inc_angle
-from bs4 import BeautifulSoup
 import matplotlib.pyplot as plt
-
-
-
-def get_corner_reflector_data(file_type = 'csv'):
-    now = datetime.now()
-    response = requests.get('https://uavsar.jpl.nasa.gov/cgi-bin/calibration.pl')
-    soup = BeautifulSoup(response.text, 'html.parser')
-    kmz_url = 'https://uavsar.jpl.nasa.gov' + soup.find('div', attrs = {'class' : 'main wrapper clearfix'}).findAll('a')[-5].get('href')
-    csv_url = f'https://uavsar.jpl.nasa.gov/cgi-bin/corner-reflectors.pl?date={now.strftime("%Y")}-{now.strftime("%m")}-{now.strftime("%d")}+00!00&project=rosamond_plate_location'
-    
-    if file_type == 'kmz':
-        wget.download(kmz_url)
-
-    elif file_type == 'csv':
-        csv_path = f'{now.strftime("%Y")}-{now.strftime("%m")}-{now.strftime("%d")}_0000_Rosamond-corner-reflectors_with_plate_motion.csv'
-
-        if os.path.exists(csv_path):
-            df = pd.read_csv(csv_path)
-            df = df.drop(df.columns[-1], axis = 1)
-            df.columns = ['Corner ID', 'Latitude', 'Longitude', 'Height', 'Azimuth', 'Elevation Angle', 'Side Length']
-            df.to_csv(csv_path)
-
-            return df
-        else:
-            wget.download(csv_url)
-            df = pd.read_csv(csv_path)
-            df = df.drop(df.columns[-1], axis = 1)
-            df.columns = ['Corner ID', 'Latitude', 'Longitude', 'Height', 'Azimuth', 'Elevation Angle', 'Side Length']
-            df.to_csv(csv_path)
-
-            return df
-
-    else:
-        raise ValueError(f"Invalid datatype specified: {file_type}. Choose from 'kmz', or 'csv'.")    
-   
-
-
-def get_uavsar_data(flight_track_id, dt, date, multilooked = '1x1'):
-    pols = ['HH', 'HV', 'VH', 'VV']
-    
-    for file in pols:
-        print(f'Downloading SLC data in {file} polarization')
-        slc_url = f'https://downloaduav2.jpl.nasa.gov/Release26/Rosamd_35012_04/Rosamd_35012_{flight_track_id}_00{dt}_{date}_L090{file}_04_BC_s1_{multilooked}.slc'
-        ann_url = f'https://downloaduav2.jpl.nasa.gov/Release26/Rosamd_35012_04/Rosamd_35012_{flight_track_id}_00{dt}_{date}_L090{file}_04_BC.ann'
-        wget.download(slc_url)
-        wget.download(ann_url)
-
-    print('Downloading Look Vector File')
-    wget.download('https://downloaduav2.jpl.nasa.gov/Release26/Rosamd_35012_04/Rosamd_35012_04_BC_s1_2x8.lkv')
-    print('Downloading Lat Long File')
-    wget.download('https://downloaduav2.jpl.nasa.gov/Release26/Rosamd_35012_04/Rosamd_35012_04_BC_s1_2x8.llh')
-    print('Download Complete.')
     
 
 def create_xyz_array(file_path, rows, cols, datatype = 'array'):
@@ -211,14 +154,14 @@ def get_dataframe(image, llh_file_path):
 
 
 if __name__ == '__main__':
-    image_path = r'C:\Users\Vision IAS\Desktop\work\HH.tiff'
-    llh_file_path = r'C:\Users\Vision IAS\Desktop\work\Thesis\Rosamd_35012_04_BC_s1_2x8.llh'
-    image = read_image.image(image_path, start_coordinate = [4500, 17500], image_size = [3500, 3500], return_array=True)
+    image_path = r'HH.tiff'
+    llh_file_path = r'Rosamd_35012_04_BC_s1_2x8.llh'
+    image = read_image.image(image_path, start_coordinate = [4500, 17500], image_size = [3500, 3500])
     df = get_dataframe(image, llh_file_path)
 
     for i in range(len(df)):
         cv2.circle(image, (df['X'][i],df['Y'][i]), 50, 1, 1)
-        
+
     plt.imshow(image, cmap='gray',vmin=1e-5,vmax=0.2)
     plt.show()
 
