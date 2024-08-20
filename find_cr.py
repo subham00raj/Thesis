@@ -154,9 +154,9 @@ def get_dataframe(image, llh_file_path):
 
 
 if __name__ == '__main__':
-    image_path = r'HH.tiff'
+    image_path = r'mag.tif'
     llh_file_path = r'Rosamd_35012_04_BC_s1_2x8.llh'
-    image = read_image.image(image_path, start_coordinate = [4500, 17500], image_size = [3500, 3500])
+    image = read_image.image(image_path, start_coordinate = [2000, 41000], image_size = [3000, 3000])
     df = get_dataframe(image, llh_file_path)
 
     for i in range(len(df)):
