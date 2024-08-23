@@ -40,31 +40,50 @@ def image(image_path, start_coordinate, image_size):
     image_subset = band.ReadAsArray(start_coordinate[0], start_coordinate[1], image_size[0], image_size[1])
     return image_subset
 
-def multilooked(image, range_pixel=1.6, azimuth_pixel=0.6):
+
+def multilooked(image, range_pixel=1.6, azimuth_pixel=0.6, gpu = False):
+
     factor = (int(range_pixel * azimuth_pixel * 100) // math.gcd(int(range_pixel * 10), int(azimuth_pixel * 10))) / 10
     range_looks = int(np.ceil(factor / range_pixel))
     azimuth_looks = int(np.ceil(factor / azimuth_pixel))
 
-    rows, cols = image.shape[0] // azimuth_looks, image.shape[1] // range_looks
-    multilook_image = np.zeros((rows, cols), dtype=image.dtype)
+    if not gpu:
+        rows, cols = image.shape[0] // azimuth_looks, image.shape[1] // range_looks
+        multilook_image = np.zeros((rows, cols), dtype=image.dtype)
 
-    with tqdm(total=rows * cols, desc="Progress", unit=" pixels") as progress_bar:
-        for i in range(rows):
-            for j in range(cols):
-                start_row, end_row = i * azimuth_looks, (i + 1) * azimuth_looks
-                start_col, end_col = j * range_looks, (j + 1) * range_looks
-                multilook_image[i, j] = np.mean(image[start_row:end_row, start_col:end_col])
-                progress_bar.update(1)
+        with tqdm(total=rows * cols, desc="Progress", unit=" pixels") as progress_bar:
+            for i in range(rows):
+                for j in range(cols):
+                    start_row, end_row = i * azimuth_looks, (i + 1) * azimuth_looks
+                    start_col, end_col = j * range_looks, (j + 1) * range_looks
+                    multilook_image[i, j] = np.mean(image[start_row:end_row, start_col:end_col])
+                    progress_bar.update(1)
 
-    return multilook_image
+        return multilook_image
+    
+    else:
+
+        import torch
+        import torch.nn.functional as F
+
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        image = torch.tensor(image)
+        image_tensor = image.unsqueeze(0).unsqueeze(0).to(device)
+
+        output_tensor = F.avg_pool2d(image_tensor, kernel_size = (range_looks, azimuth_looks), stride = (range_looks, azimuth_looks), padding = 0)
+        output_tensor = output_tensor.squeeze(0).squeeze(0).cpu()
+
+        new = output_tensor.numpy().reshape(output_tensor.shape)
+        new = np.rot90(new,k=2)
+        return new
 
 
 if __name__ == '__main__':
     coord = [2000, 41000]  # Starting coordinate [x,y]
     size = [3000, 3000]    # Image size [x,y]
-    image_path = r'mag.tif'
+    image_path = r'HH_mag.tif'
     img1 = image(image_path, start_coordinate=coord, image_size=size)
-    img2 = multilooked(image=img1, range_pixel=1.6, azimuth_pixel=0.6)
+    img2 = multilooked(image=img1, range_pixel=1.6, azimuth_pixel=0.6, gpu = False)
     
     fig, axs = plt.subplots(1, 2, figsize=(12, 6))
     axs[0].imshow(img1, cmap='gray', vmin=0.001, vmax=0.13)
