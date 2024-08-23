@@ -19,6 +19,7 @@ from tqdm import tqdm
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import create_inc
     
 
 def create_xyz_array(file_path, rows, cols, datatype = 'array'):
@@ -90,20 +91,36 @@ def get_dataframe(image, llh_file_path):
     df['Tentative Y'] = df['Tentative Location'].apply(lambda x: x[0])
     df['Tentative X'] = df['Tentative Location'].apply(lambda x: x[1])
 
-    df['Y'] = [exact_location(df['Tentative X'][i],df['Tentative Y'][i], window_size=16, image = image)[0] for i in range(len(df))]
-    df['X'] = [exact_location(df['Tentative X'][i],df['Tentative Y'][i], window_size=16, image = image)[1] for i in range(len(df))]
+    df['Local Y'] = [exact_location(df['Tentative X'][i],df['Tentative Y'][i], window_size=16, image = image)[0] for i in range(len(df))]
+    df['Local X'] = [exact_location(df['Tentative X'][i],df['Tentative Y'][i], window_size=16, image = image)[1] for i in range(len(df))]
 
-    return df[['Corner ID', 'Latitude', 'Longitude', 'Height', 'Azimuth', 'Elevation Angle', 'Side Length', 'Y', 'X']]
+    return df[['Corner ID', 'Latitude', 'Longitude', 'Height', 'Azimuth', 'Elevation Angle', 'Side Length', 'Local Y', 'Local X']]
 
 
 if __name__ == '__main__':
+
     image_path = r'HH_mag.tif'
     llh_file_path = r'Rosamd_35012_04_BC_s1_2x8.llh'
-    image = read_image.image(image_path, start_coordinate = [2000, 41000], image_size = [3000, 3000])
-    df = get_dataframe(image, llh_file_path)
+    lkv_file_path = r'Rosamd_35012_04_BC_s1_2x8.lkv'
 
+    # create image subset
+    start_coordinate = [2000, 41000]
+    image_size = [3000, 3000]
+    image = read_image.image(image_path, start_coordinate, image_size)
+
+    # calculate incidence angle
+    inc_array_flat = create_inc.create_inc_array_flat(min_look_angle = 21.32159622, max_look_angle = 66.17122143, row_1x1 = 61349, col_1x1 = 9874)
+
+    # Output csv
+    df = get_dataframe(image, llh_file_path)
+    df['Global Y'] = start_coordinate[1] + df['Local Y']
+    df['Global X'] = start_coordinate[0] + df['Local X']
+    df['Incidence Angle'] = inc_array_flat[df['Global Y'],df['Global X']]
+    df.to_csv('Input.csv', index = False)
+
+    # image plot
     for i in range(len(df)):
-        cv2.circle(image, (df['X'][i],df['Y'][i]), 50, 1, 1)
+        cv2.circle(image, (df['Local X'][i],df['Local Y'][i]), 50, 1, 1)
 
     plt.imshow(image, cmap='gray',vmin=1e-5,vmax=0.2)
     plt.show()
