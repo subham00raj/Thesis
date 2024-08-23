@@ -74,7 +74,6 @@ def multilooked(image, range_pixel=1.6, azimuth_pixel=0.6, gpu = False):
         output_tensor = output_tensor.squeeze(0).squeeze(0).cpu()
 
         new = output_tensor.numpy().reshape(output_tensor.shape)
-        new = np.rot90(new,k=2)
         return new
 
 
