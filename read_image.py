@@ -66,7 +66,7 @@ def multilooked(image, range_pixel=1.6, azimuth_pixel=0.6, gpu = False):
         import torch
         import torch.nn.functional as F
 
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        device = torch.device("cuda")
         image = torch.tensor(image)
         image_tensor = image.unsqueeze(0).unsqueeze(0).to(device)
 
