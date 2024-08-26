@@ -120,8 +120,12 @@ if __name__ == '__main__':
     df.to_csv('Input.csv', index = False)
 
     # image plot
+    plt.imshow(image, cmap='gray', vmin=1e-5, vmax=0.2)
     for i in range(len(df)):
         cv2.circle(image, (df['Local X'][i],df['Local Y'][i]), 50, 1, 1)
+        text = df['Corner ID'][i]
+        plt.text(df['Local X'][i]-25, df['Local Y'][i]+100, text, fontsize=8, color='red')
 
     plt.imshow(image, cmap='gray', vmin=1e-5, vmax=0.2)
+    plt.title('Corner Reflectors Operating In-situ')
     plt.show()

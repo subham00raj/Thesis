@@ -78,8 +78,8 @@ def multilooked(image, range_pixel=1.6, azimuth_pixel=0.6, gpu = False):
 
 
 if __name__ == '__main__':
-    coord = [2000, 41000]  # Starting coordinate [x,y]
-    size = [3000, 3000]    # Image size [x,y]
+    coord = [2000, 41000]  # Starting coordinate [row, col]
+    size = [3000, 3000]    # Image size [row, col]
     image_path = r'HH_mag.tif'
     img1 = image(image_path, start_coordinate=coord, image_size=size)
     img2 = multilooked(image=img1, range_pixel=1.6, azimuth_pixel=0.6, gpu = False)
