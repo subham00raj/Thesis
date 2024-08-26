@@ -20,6 +20,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import create_inc
+import config
     
 
 def create_xyz_array(file_path, rows, cols, datatype = 'array'):
@@ -81,7 +82,7 @@ def get_dataframe(image, llh_file_path):
         max_pixel_coordinates = np.unravel_index(np.argmax(window), window.shape)
         return top_left_y + max_pixel_coordinates[0], top_left_x + max_pixel_coordinates[1]
 
-    total_cols = 4937
+    total_cols = config.col_2x8
     df['Pixel Number'] = get_cr_location(llh_file_path)
     df['Pixel Location in 2x8 SLC'] = df['Pixel Number'].apply(lambda x: [calculate_indices(total_cols, i) for i in x])
     df['Pixel Location in 1x1 SLC'] = df['Pixel Location in 2x8 SLC'].apply(lambda x: [calculate_location_in_slc(i) for i in x])
@@ -104,12 +105,12 @@ if __name__ == '__main__':
     lkv_file_path = r'Rosamd_35012_04_BC_s1_2x8.lkv'
 
     # create image subset
-    start_coordinate = [2000, 41000]
-    image_size = [3000, 3000]
+    start_coordinate = config.subset_start_coordinate
+    image_size = config.subset_size
     image = read_image.image(image_path, start_coordinate, image_size)
 
     # calculate incidence angle
-    inc_array_flat = create_inc.create_inc_array_flat(min_look_angle = 21.32159622, max_look_angle = 66.17122143, row_1x1 = 61349, col_1x1 = 9874)
+    inc_array_flat = create_inc.create_inc_array_flat(config.mininum_look_angle, config.maximum_look_angle, config.row_1x1, config.col_1x1)
 
     # Output csv
     df = get_dataframe(image, llh_file_path)
@@ -122,8 +123,5 @@ if __name__ == '__main__':
     for i in range(len(df)):
         cv2.circle(image, (df['Local X'][i],df['Local Y'][i]), 50, 1, 1)
 
-    plt.imshow(image, cmap='gray',vmin=1e-5,vmax=0.2)
+    plt.imshow(image, cmap='gray', vmin=1e-5, vmax=0.2)
     plt.show()
-
-
-

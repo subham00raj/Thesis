@@ -1,4 +1,5 @@
 import numpy as np
+import create_inc
 
 def radar_cross_section(length, wavelength, elevation_angle, theta, azimuth):
   theta_cr = np.deg2rad(theta + elevation_angle)
@@ -45,3 +46,14 @@ def distributed_target_analysis(HV, VH, gpu=False):
         return g_gpu.cpu().numpy(), phase_diff_gpu.cpu().numpy()
 
     return g, phase_diff
+
+
+def apply_radio_cal(parameters):
+   inc = create_inc.create_inc_array_flat(min_look_angle = 21.32159622, max_look_angle = 66.17122143, row_1x1 = 61349, col_1x1 = 9874)
+   inc = inc[2000:5000, 41000:44000]
+   
+   pass
+
+
+
+   
