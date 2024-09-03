@@ -1,6 +1,6 @@
 import numpy as np
 import struct
-from osgeo import gdal
+import config
 from uavsar_pytools.incidence_angle import calc_inc_angle
 
 
@@ -49,16 +49,14 @@ def create_inc_array_dem(llh_file, lkv_file, row_2x8, col_2x8):
     return inc_arr
 
 
-def create_inc_array_flat(min_look_angle, max_look_angle, row_1x1, col_1x1):
+def create_inc_array_flat(min_look_angle, max_look_angle, row_1x1, col_1x1, subset = False):
     '''
     This fucntion takes minimum and maximum look angle provided in .ann metadata file. 
     Assuming flat terrain i.e., angle varies linearly from min to max across image width.
     '''
     array = np.linspace(min_look_angle, max_look_angle, col_1x1)
     stacked_inc_array = np.tile(array, (row_1x1, 1))
+    if subset:
+        return stacked_inc_array[config.y_start:config.y_start + config.y_size, config.x_start:config.x_start + config.x_size]
+    
     return stacked_inc_array
-
-
-if __name__ == '__main__':
-    x = create_inc_array_flat(min_look_angle = 21.32159622, max_look_angle = 66.17122143, row_1x1 = 61349, col_1x1 = 9874)[41000:44000, 2000:5000]
-    print(x[1433,2983])
