@@ -1,15 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 
 def polsign(rcs, mode='c'):
     dic = {'c': 'Co', 'x': 'Cross'}
-
-    if mode not in ['c', 'x']:
-        raise ValueError("Invalid mode. Must be 'c' (co-pol) or 'x' (cross-pol).")
-    
-    if rcs.shape != (2, 2):
-        raise ValueError("rcs must be a 2x2 matrix.")
     
     el_range = np.linspace(-45, 45, 200)
     tilt_range = np.linspace(-90, 90, 200)
@@ -60,3 +53,4 @@ def polsign(rcs, mode='c'):
 if __name__ == "__main__":
     rcs_matrix = np.array([[1, 0], [0, 1]])
     polsign(rcs_matrix, 'c')
+
