@@ -8,5 +8,6 @@
 *.tif
 *.md
 *.png
+*.npy
 __pycache__/
 !requirements.txt

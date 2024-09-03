@@ -75,5 +75,3 @@ if __name__ == '__main__':
     axs[1].imshow(img2, cmap='gray', vmin=0.001, vmax=0.13)
     axs[1].set_title('Geometrically Corrected Image - Square Pixels')
 
-    plt.show()
-
