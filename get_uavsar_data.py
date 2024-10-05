@@ -66,7 +66,6 @@ def get_uavsar_data(flight_track_id, dt, date, multilooked = '1x1'):
 
 
 if __name__ == '__main__':
-
     # Download CR data
     sys.stdout.write("Downloading Corner Reflector Data \r")
     sys.stdout.flush()
@@ -76,4 +75,4 @@ if __name__ == '__main__':
         sys.stdout.flush()
     
     # Download Image data
-    get_uavsar_data(flight_track_id=16074, dt=5, date=160920, multilooked = '1x1')
+    get_uavsar_data(flight_track_id = 16074, dt = 5, date = 160920, multilooked = '1x1')

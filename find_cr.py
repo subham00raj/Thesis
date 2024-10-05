@@ -20,6 +20,8 @@ import matplotlib.pyplot as plt
 import create_inc
 import config
 import os
+from dotenv import load_dotenv
+load_dotenv()
     
 
 def create_xyz_array(file_path, rows, cols, datatype = 'array'):
@@ -41,18 +43,34 @@ def create_xyz_array(file_path, rows, cols, datatype = 'array'):
         raise ValueError(f"Invalid datatype specified: {datatype}. Choose from 'stacked', 'dataframe', or 'array'.")
         
 
+import pandas as pd
+import sys
+
 def get_cr_location(csv_path, llh_file_path):
     cr_df = pd.read_csv(csv_path)
-    llh_df = create_xyz_array(llh_file_path, rows = 7669, cols = 4937 , datatype = 'dataframe')
+    llh_df = create_xyz_array(llh_file_path, rows=7669, cols=4937, datatype='dataframe')
     pixel_loc = []
 
-    for i in range(len(cr_df)):
+    total_cr = len(cr_df) 
+    found_cr_count = 0  
+
+    for i in range(total_cr):
         llh_df['CR_Latitude'] = abs(llh_df['Latitude'] - cr_df['Latitude'][i])
         llh_df['CR_Longitude'] = abs(llh_df['Longitude'] - cr_df['Longitude'][i])
 
-        pixel_loc.append(llh_df[(llh_df['CR_Latitude'] < 0.00001) & (llh_df['CR_Longitude'] < 0.0001)].index.tolist())
 
+        matching_indices = llh_df[(llh_df['CR_Latitude'] < 0.00001) & (llh_df['CR_Longitude'] < 0.0001)].index.tolist()
+        
+        if matching_indices:  
+            found_cr_count += 1  
+            sys.stdout.write(f"\rFound {found_cr_count} CRs out of {total_cr} CRs") 
+            sys.stdout.flush()
+
+        pixel_loc.append(matching_indices)
+
+    print()
     return pixel_loc
+
 
 def get_dataframe(image, csv_path, llh_file_path):
     cr_df = pd.read_csv(csv_path)
@@ -95,13 +113,13 @@ def get_dataframe(image, csv_path, llh_file_path):
 
 if __name__ == '__main__':
 
-    csv_path = os.path.join(os.getcwd(), '2020-09-16_0000_Rosamond-corner-reflectors_with_plate_motion.csv')
-    llh_file_path = os.path.join(os.getcwd(), 'Rosamd_35012_04_BC_s1_2x8.llh')
-    lkv_file_path = os.path.join(os.getcwd(), 'Rosamd_35012_04_BC_s1_2x8.lkv')
-    HH_path = os.path.join(os.getcwd(), 'HH.tif')
-    HV_path = os.path.join(os.getcwd(), 'HV.tif')
-    VH_path = os.path.join(os.getcwd(), 'VH.tif')
-    VV_path = os.path.join(os.getcwd(), 'VV.tif')
+    csv_path = os.getenv('csv_path')
+    llh_file_path = os.getenv('llh_path')
+    lkv_file_path = os.getenv('lkv_path')
+    HH_path = os.getenv('HH_tif_path')
+    HV_path = os.getenv('HV_tif_path')
+    VH_path = os.getenv('VH_tif_path')
+    VV_path = os.getenv('VV_tif_path')
 
     # create image subset
     start_coordinate = [config.x_start, config.y_start]

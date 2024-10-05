@@ -7,6 +7,9 @@ import time
 from tqdm import tqdm
 import pandas as pd
 import matplotlib.pyplot as plt
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def radar_cross_section(length, elevation_angle, incidence_angle, azimuth, wavelength):
   theta_cr = np.deg2rad(incidence_angle + elevation_angle)
@@ -16,6 +19,31 @@ def radar_cross_section(length, elevation_angle, incidence_angle, azimuth, wavel
   b = 2/a
   rcs = factor * ((a - b)**2)
   return rcs
+
+
+
+def measured_power(row, col, image):
+  window_size_x = 51
+  window_size_y = 101
+  left = col - (window_size_x // 2)
+  right = left + window_size_x
+  top = row - (window_size_y // 2) + 1
+  bottom = top + window_size_y
+  img = image[top:bottom, left:right]
+
+  horizontal = img[25:76,:]
+  vertical = img[:,12:38]
+  background_1 = img[0:25,0:12]
+  background_2 = img[0:25,38:51]
+  background_3 = img[76:101,0:12]
+  background_4 = img[76:101,38:51]
+
+  background_return_per_pixel = (np.sum(background_1) + np.sum(background_2) + np.sum(background_3) + np.sum(background_4)) / 1250
+  power_from_cross = np.sum(horizontal) + np.sum(vertical) - np.sum(img[25:76,12:38])
+  power_from_cr = power_from_cross - (background_return_per_pixel * 3563)
+
+  return power_from_cr
+
 
 
 def point_target_analysis(length, wavelength, elevation_angle, theta, azimuth, HH, VV):
@@ -29,9 +57,11 @@ def point_target_analysis(length, wavelength, elevation_angle, theta, azimuth, H
   f = ((np.abs(VV)**2) / (np.abs(HH))) ** 0.25
 
   # co channel imbalance phase
-  phase_sum = np.angle(np.array(VV) * np.conj(HH))
+  co_phase = np.angle(np.array(VV) * np.conj(HH))
 
-  return a, a_dB, f, phase_sum, measured_rcs, theoritical_rcs
+  return a, a_dB, f, co_phase, measured_rcs, theoritical_rcs
+
+
 
 
 def distributed_target_analysis(HV_full_scene, VH_full_scene, gpu=False):
@@ -39,7 +69,7 @@ def distributed_target_analysis(HV_full_scene, VH_full_scene, gpu=False):
     g = np.mean((np.abs(HV_full_scene) ** 2) / (np.abs(VH_full_scene))) ** 0.25
 
     # Cross-channel imbalance phase
-    phase_diff = np.angle(np.mean(HV_full_scene * np.conj(VH_full_scene)))
+    cross_phase = np.angle(np.mean(HV_full_scene * np.conj(VH_full_scene)))
 
     if gpu:
         import torch
@@ -48,11 +78,11 @@ def distributed_target_analysis(HV_full_scene, VH_full_scene, gpu=False):
         VH_tensor = torch.tensor(VH_full_scene, device='cuda')
 
         g_gpu = torch.mean((torch.abs(HV_tensor) ** 2) / torch.abs(VH_tensor)) ** 0.25
-        phase_diff_gpu = torch.angle(torch.mean(HV_tensor * torch.conj(VH_tensor)))
+        cross_phase_gpu = torch.angle(torch.mean(HV_tensor * torch.conj(VH_tensor)))
         torch.cuda.empty_cache()
-        return g_gpu.cpu().numpy(), phase_diff_gpu.cpu().numpy()
+        return g_gpu.cpu().numpy(), cross_phase_gpu.cpu().numpy()
 
-    return g, phase_diff
+    return g, cross_phase
 
 
 def apply_radio_cal(cr_length, image_path, input_csv_path):
@@ -96,13 +126,14 @@ def apply_radio_cal(cr_length, image_path, input_csv_path):
   end = time.time()
   print(f'Executed in {(end - start):.2f} seconds.')
   return calibrated_image
-          
-
+        
 if __name__ == '__main__':
-   image_pol = os.path.join(os.getcwd(), 'HH.tif')
-   dataframe = os.path.join(os.getcwd(), 'Input.csv')
+   image_pol = os.getenv('HH_tif_path')
+   dataframe = os.getenv('Input_csv_path')
    img = apply_radio_cal(cr_length = 4.8, image_path = image_pol, input_csv_path = dataframe)
-   np.save('img.npy',img)
+   img = np.abs(img)
+   plt.imshow(img, cmap='gray')
+   plt.show()
   
    
 

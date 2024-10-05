@@ -4,7 +4,9 @@ from tqdm import tqdm
 import numpy as np
 from osgeo import gdal
 import matplotlib.pyplot as plt
+from dotenv import load_dotenv
 
+load_dotenv()
 gdal.UseExceptions()
 
 def read_slc(file_path, rows=61349, cols=9874, subset = False, gpu=False):
@@ -24,6 +26,13 @@ def image_array(image_path):
     band = dataset.GetRasterBand(1)
     image_subset = band.ReadAsArray()
     return image_subset
+
+def export(file_name, array):
+  rows, cols = array.shape
+  driver = gdal.GetDriverByName('GTiff')
+  output = driver.Create(file_name, cols, rows, 1, gdal.GDT_Float32)
+  output.GetRasterBand(1).WriteArray(array)
+  output.FlushCache()
 
 
 def multilooked(image, range_pixel=1.6, azimuth_pixel=0.6, gpu = False):
@@ -64,7 +73,8 @@ def multilooked(image, range_pixel=1.6, azimuth_pixel=0.6, gpu = False):
 
 if __name__ == '__main__':
     
-    image_path = os.path.join(os.getcwd(), 'HH.tif')
+    image_path = os.getenv('HH_tif_path')
+    print(image_path)
     img1 = np.abs(image_array(image_path))
     img2 = multilooked(image=img1, range_pixel=1.6, azimuth_pixel=0.6, gpu = False)
     
@@ -74,4 +84,5 @@ if __name__ == '__main__':
     
     axs[1].imshow(img2, cmap='gray', vmin=0.001, vmax=0.13)
     axs[1].set_title('Geometrically Corrected Image - Square Pixels')
+    plt.show()
 

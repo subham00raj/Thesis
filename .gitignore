@@ -6,8 +6,11 @@
 *.lkv
 *.slc
 *.tif
+.env
 *.md
 *.png
 *.npy
+*.tif
+*.ipynb
 __pycache__/
 !requirements.txt
