@@ -1,6 +1,6 @@
 import numpy as np
-import create_inc
-import read_image
+import utilities.create_inc as create_inc
+import utilities.read_image as read_image
 import config
 import os
 import time
@@ -87,42 +87,45 @@ def distributed_target_analysis(HV_full_scene, VH_full_scene, gpu=False):
 
 def apply_radio_cal(cr_length, image_path, input_csv_path):
   start = time.time()
-  df = pd.read_csv(input_csv_path).copy()
-  df['HH'] = df['HH'].apply(lambda x: np.complex64(complex(x)))
-  df['VV'] = df['VV'].apply(lambda x: np.complex64(complex(x)))
-  df['a'], _ , df['f'], df['phase sum'], df['Measured RCS'], df['Theoritical RCS']  = point_target_analysis(length = df['Side Length'],
-                                                                                                            wavelength = 0.234, 
-                                                                                                            elevation_angle = df['Elevation Angle'], 
-                                                                                                            theta = df['Incidence Angle'], 
-                                                                                                            azimuth = df['Azimuth'], 
-                                                                                                            HH = df['HH'], 
-                                                                                                            VV = df['VV'])
-  df = df[(df['Side Length'] == cr_length) & (df['Measured RCS'] > 10)]
-  #g, phase_diff = distributed_target_analysis(HV, VH, gpu=False)
-
-  inc = create_inc.create_inc_array_flat(min_look_angle = config.mininum_look_angle,
-                                        max_look_angle = config.maximum_look_angle, 
-                                        row_1x1 = config.row_1x1, 
-                                        col_1x1 = config.col_1x1,
-                                        subset = True)
-  
-  a_slope, a_intercept = np.polyfit(x = df['Incidence Angle'] - config.mount_antenna_angle, y = df['a'], deg = 1)
-  p_slope, p_intercept = np.polyfit(x = df['Incidence Angle'] - config.mount_antenna_angle, y = df['phase sum'], deg = 1)
-  
   image = read_image.image_array(image_path)
   rows, cols = image.shape
-  calibrated_image = np.zeros_like(image)
-  A = np.zeros_like(image)
-  P = np.zeros_like(image)
-
+  
   with tqdm(total=rows*cols, desc='Calibration Progress', unit = ' pixels') as pbar:
-      for i in range(rows):
-          for j in range(cols):
-              A[i, j] = a_slope * (inc[i, j] - config.mount_antenna_angle) + a_intercept
-              calibrated_image[i, j] = image[i, j] / A[i, j]
-              pbar.update(1)
+    df = pd.read_csv(input_csv_path).copy()
+    df['HH'] = df['HH'].apply(lambda x: np.complex64(complex(x)))
+    df['VV'] = df['VV'].apply(lambda x: np.complex64(complex(x)))
+    df['a'], _ , df['f'], df['phase sum'], df['Measured RCS'], df['Theoritical RCS']  = point_target_analysis(length = df['Side Length'],
+                                                                                                              wavelength = 0.234, 
+                                                                                                              elevation_angle = df['Elevation Angle'], 
+                                                                                                              theta = df['Incidence Angle'], 
+                                                                                                              azimuth = df['Azimuth'], 
+                                                                                                              HH = df['HH'], 
+                                                                                                              VV = df['VV'])
+    df = df[(df['Side Length'] == cr_length) & (df['Measured RCS'] > 10)]
+    #g, phase_diff = distributed_target_analysis(HV, VH, gpu=False)
 
-  df.to_csv('Output.csv', index = False)
+    inc = create_inc.create_inc_array_flat(min_look_angle = config.mininum_look_angle,
+                                          max_look_angle = config.maximum_look_angle, 
+                                          row_1x1 = config.row_1x1, 
+                                          col_1x1 = config.col_1x1,
+                                          subset = True)
+    
+    a_slope, a_intercept = np.polyfit(x = df['Incidence Angle'] - config.mount_antenna_angle, y = df['a'], deg = 1)
+    p_slope, p_intercept = np.polyfit(x = df['Incidence Angle'] - config.mount_antenna_angle, y = df['phase sum'], deg = 1)
+    
+
+    calibrated_image = np.zeros_like(image)
+    A = np.zeros_like(image)
+    P = np.zeros_like(image)
+
+    for i in range(rows):
+        for j in range(cols):
+            A[i, j] = a_slope * (inc[i, j] - config.mount_antenna_angle) + a_intercept
+            calibrated_image[i, j] = image[i, j] / A[i, j]
+            pbar.update(1)
+
+  file_path = os.path.join(os.getenv('output_folder_path'),'Output.csv')
+  df.to_csv(file_path, index = False)
   end = time.time()
   print(f'Executed in {(end - start):.2f} seconds.')
   return calibrated_image

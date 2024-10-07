@@ -1,74 +1,98 @@
 import streamlit as st
 from PIL import Image
 import numpy as np
-import matplotlib.pyplot as plt
 from streamlit_image_comparison import image_comparison
 
-# Set Streamlit page configuration to wide layout
+# Set Streamlit page configuration to wide layout and custom page height
 st.set_page_config(layout="wide")
+
 st.markdown(
     """
     <style>
-    .st-emotion-cache-1jicfl2 {
-width: 100%;
-padding: 6rem 1rem 10rem;
-min-width: auto;
-max-width: initial;
-}
+    /* Label styles */
+    .image-comparison-label {
+        background-color: rgba(0, 0, 255, 0.8); /* Semi-transparent white */
+        padding: 5px 10px;
+        border-radius: 3px;
+        position: absolute; /* Make it positionable */
+        z-index: 10; /* Ensure it's above the images */
+    }
+    
+    /* Position for left and right labels */
+    .label1 {
+        left: 10px; /* Position for the left label */
+        top: 5px; /* Adjust top position as needed */
+    }
+    
+    .label2 {
+        right: 10px; /* Position for the right label */
+        top: 5px; /* Adjust top position as needed */
+    }
+    
+    </style>
     """,
-    unsafe_allow_html=True,
+    unsafe_allow_html=True
 )
 
-
-def normalize_image(image, vmin, vmax):
-    """Normalize the image to the range [0, 1] based on vmin and vmax."""
-    normalized = np.clip(image, vmin, vmax)
-    normalized = (normalized - vmin) / (vmax - vmin)
-    return normalized
-
 def main():
-    # Set title for the app
-    st.title("Image Comparison")
+    # Create a container for better layout control
+    with st.container():
+        # Split the page into two columns with custom ratios
+        col1, _, col2 = st.columns([2.5, 1, 5])
 
-    # Adjust column widths and add a spacer column (e.g., 1:0.1:3)
-    col1, spacer, col2 = st.columns([2, 0.8, 5])  # Adjust the middle number to set the space size
-
-    with col1:
-        # File uploaders in the left column
-        uncalibrated_image = st.file_uploader("Choose uncalibrated image", type="tiff")
-        calibrated_image = st.file_uploader("Choose calibrated image", type="tiff")
-
-    with col2:
-        if calibrated_image and uncalibrated_image:
-            # Open images
-            img1 = Image.open(calibrated_image)
-            img2 = Image.open(uncalibrated_image)
-
-            # Convert to numpy arrays and ensure they're float type
-            img1_array = np.array(img1).astype(float)
-            img2_array = np.array(img2).astype(float)
-
-            # Check if images have the same dimensions
-            if img1_array.shape != img2_array.shape:
-                st.error("Images must have the same dimensions")
-                return
-
-            # Normalize images based on vmin and vmax
-            img1_norm = normalize_image(img1_array, 0.001, 0.1)
-            img2_norm = normalize_image(img2_array, 0.001, 0.1)
-
-            # Use the image_comparison component in the right column
-            image_comparison(
-                img1=img1_norm,
-                img2=img2_norm,
-                label1="Calibrated",
-                label2="Uncalibrated",
-                width=700,  # Adjust the width of the comparison slider
-                starting_position=50,
-                show_labels=True,
-                make_responsive=True,
-                in_memory=True
+        with col1:
+            st.markdown("<h2 class='subheader'>Image Comparison Tool</h2>", unsafe_allow_html=True)
+            
+            # File uploaders with custom styling
+            uncalibrated_image = st.file_uploader(
+                "Upload uncalibrated image",
+                type="png",
+                help="Select a PNG file for the uncalibrated image"
             )
+            
+            calibrated_image = st.file_uploader(
+                "Upload calibrated image",
+                type="png",
+                help="Select a PNG file for the calibrated image"
+            )
+
+        with col2:
+            # Create a container for the comparison view
+            st.markdown("<div class='comparison-container'>", unsafe_allow_html=True)
+            
+            if calibrated_image and uncalibrated_image:
+                try:
+                    # Open and process images
+                    img1 = Image.open(calibrated_image)
+                    img2 = Image.open(uncalibrated_image)
+
+                    img1_array = np.array(img1)
+                    img2_array = np.array(img2)
+
+                    # Verify image dimensions
+                    if img1_array.shape != img2_array.shape:
+                        st.error("⚠️ Images must have the same dimensions")
+                        return
+
+                    # Extract filenames for labels
+                    label1 = calibrated_image.name if calibrated_image else "Calibrated"
+                    label2 = uncalibrated_image.name if uncalibrated_image else "Uncalibrated"
+
+                    # Display comparison slider
+                    image_comparison(
+                        img1=img1_array,
+                        img2=img2_array,
+                        label1=label1,
+                        label2=label2,
+                        width=int(img1_array.shape[1] * 0.4),
+                        show_labels=True,
+                        make_responsive=True,
+                        in_memory=True
+                    )
+                except Exception as e:
+                    st.error(f"Error processing images: {str(e)}")
+            
+            st.markdown("</div>", unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
