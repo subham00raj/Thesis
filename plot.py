@@ -46,13 +46,13 @@ def main():
             # File uploaders with custom styling
             uncalibrated_image = st.file_uploader(
                 "Upload uncalibrated image",
-                type="png",
+                #type="png",
                 help="Select a PNG file for the uncalibrated image"
             )
             
             calibrated_image = st.file_uploader(
                 "Upload calibrated image",
-                type="png",
+                #type="png",
                 help="Select a PNG file for the calibrated image"
             )
 
@@ -84,7 +84,7 @@ def main():
                         img2=img2_array,
                         label1=label1,
                         label2=label2,
-                        width=int(img1_array.shape[1] * 0.4),
+                        width=int(img1_array.shape[1] * 0.3),
                         show_labels=True,
                         make_responsive=True,
                         in_memory=True

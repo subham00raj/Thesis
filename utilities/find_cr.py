@@ -18,9 +18,10 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import create_inc
-import SAR.utilities.config as config
+import config
 import os
 from dotenv import load_dotenv
+
 load_dotenv()
     
 
@@ -138,7 +139,7 @@ if __name__ == '__main__':
     df['HV'] = read_image.image_array(HV_path)[df['Local Y'],df['Local X']]
     df['VH'] = read_image.image_array(VH_path)[df['Local Y'],df['Local X']]
     df['VV'] = read_image.image_array(VV_path)[df['Local Y'],df['Local X']]
-    df.to_csv('Input.csv', index = False)
+    df.to_csv(os.getenv('Input_csv_path'), index = False)
 
     # image plot
     plt.imshow(image, cmap='gray', vmin=1e-5, vmax=0.2)
