@@ -21,10 +21,13 @@ def read_slc(file_path, rows=61349, cols=9874, subset = False, gpu=False):
         return result
     return np.array(image)
 
-def image_array(image_path):
+def image_array(image_path, normalize = False):
     dataset = gdal.Open(image_path)
     band = dataset.GetRasterBand(1)
     image_subset = band.ReadAsArray()
+
+    if normalize:
+        return (image_subset - np.min(image_subset)) / (np.max(image_subset) - np.min(image_subset))
     return image_subset
 
 def export(file_name, array):

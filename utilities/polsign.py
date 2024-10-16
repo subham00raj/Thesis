@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def polsign(rcs, mode='c'):
+def plot_pol_sign(rcs, mode='c',figsize = None):
     dic = {'c': 'Co', 'x': 'Cross'}
     
     el_range = np.linspace(-45, 45, 200)
@@ -39,7 +39,7 @@ def polsign(rcs, mode='c'):
     pResp = pResp.reshape(len(tilt_range), len(el_range))
     
     # Create a 3D surface plot
-    fig = plt.figure(figsize=(10, 8))
+    fig = plt.figure(figsize=figsize)
     ax = fig.add_subplot(111, projection='3d')
     surf = ax.plot_surface(El, Tilt, pResp, cmap='viridis', edgecolor='none', alpha=0.9)
     ax.set_xlabel('Ellipticity Angle (degrees)', fontsize=12)
@@ -52,5 +52,5 @@ def polsign(rcs, mode='c'):
 
 if __name__ == "__main__":
     rcs_matrix = np.array([[1, 0], [0, 1]])
-    polsign(rcs_matrix, 'c')
+    plot_pol_sign(rcs_matrix, 'c', figsize=(10,8))
 
