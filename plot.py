@@ -46,6 +46,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+
 def normalize(image, vmin, vmax):
     image = np.abs(image)
     norm = (image - np.min(image)) / (np.max(image) - np.min(image))

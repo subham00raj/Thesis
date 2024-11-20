@@ -1,17 +1,3 @@
-'''
-
-@author : Subham Raj
-
-Application : Polarimetric SAR Calibration
-
-Input : Corner Reflector Data in .csv format, LLH file, LKV file
-
-Output : Corner Reflector Detected Image
-
-Reference : https://uavsar.jpl.nasa.gov/cgi-bin/calibration.pl
-
-'''
-
 import read_image
 import cv2
 import numpy as np

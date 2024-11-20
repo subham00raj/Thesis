@@ -8,7 +8,9 @@
 *.md
 *.png
 .whl
-*.ipynb
+*.npy
 __pycache__/
+Covariance/
+Output/
 Data/
 !requirements.txt
