@@ -27,6 +27,7 @@ def get_covariance(hh, hv, vh, vv):
 
     return C
 
+# calibration matrix
 def compute_sigma_1_matrix(u, v, w, z, alpha):
     sqrt_alpha = np.sqrt(alpha)
     arr = np.array([[1, -w, -v, v*w],
@@ -104,8 +105,9 @@ def ainsworth_cal(covar):
     tolerance = 1e-8
     i_iter = 0
     alpha = compute_alpha(covar)
+    sigma_1_matrix_i = None
 
-    while i_iter < 2:
+    while i_iter < 12 and gamma > tolerance:
         sigma_1_matrix_i = compute_sigma_1_matrix(u, v, w, z, alpha)
 
         covariance_i = sigma_1_matrix_i @ covar @ np.conj(sigma_1_matrix_i).T
@@ -125,10 +127,9 @@ def ainsworth_cal(covar):
         alpha = alpha * alpha_i
 
         gamma = (max(abs(u), abs(v), abs(w), abs(z)))
-        print(f'This is gamma in {i_iter}th iteration :', gamma)
         i_iter = i_iter + 1
     
-    return gamma
+    return sigma_1_matrix_i
 
     
     
@@ -174,7 +175,8 @@ if __name__ == '__main__':
     pbar = tqdm(total = (HH.shape[0] * HH.shape[1])/ window_size, desc = 'Calculating Parameters', unit = 'windows')
     for a,b,c,d in sliding_window(HH, HV, VH, VV, window_size):
         cov = get_covariance(a,b,c,d)
-        ainsworth_cal(cov)
+        cal = ainsworth_cal(cov)
+        print(cal.shape)
         pbar.update(1)
     pbar.close()
 
