@@ -5,7 +5,6 @@
 *.lkv
 *.slc
 .env
-*.md
 *.png
 .whl
 *.npy

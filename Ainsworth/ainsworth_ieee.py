@@ -95,8 +95,6 @@ def parameter_updates(x, zeta, tau):
 
 
 def ainsworth_cal(covar):
-
-    # Initialize cross talk parameters with zero
     u = 0
     v = 0
     w = 0
@@ -105,9 +103,8 @@ def ainsworth_cal(covar):
     tolerance = 1e-8
     i_iter = 0
     alpha = compute_alpha(covar)
-    sigma_1_matrix_i = None
 
-    while i_iter < 12 and gamma > tolerance:
+    while i_iter < 12:
         sigma_1_matrix_i = compute_sigma_1_matrix(u, v, w, z, alpha)
 
         covariance_i = sigma_1_matrix_i @ covar @ np.conj(sigma_1_matrix_i).T
@@ -120,10 +117,10 @@ def ainsworth_cal(covar):
         delta_u, delta_v, delta_w, delta_z = parameter_updates(X, zeta, tau)
         alpha_i = compute_alpha(covariance_i)
 
-        u = (u + delta_u / alpha)[0]
-        v = (v + delta_v / alpha)[0]
-        w = (w + delta_w / alpha)[0]
-        z = (z + delta_z / alpha)[0]
+        u = (u + delta_u / np.sqrt(alpha))[0]
+        v = (v + delta_v / np.sqrt(alpha))[0]
+        w = (w + delta_w * np.sqrt(alpha))[0]
+        z = (z + delta_z * np.sqrt(alpha))[0]
         alpha = alpha * alpha_i
 
         gamma = (max(abs(u), abs(v), abs(w), abs(z)))
@@ -132,52 +129,5 @@ def ainsworth_cal(covar):
     return sigma_1_matrix_i
 
     
-    
-######################################################################### I M P L M E N T A T I O N ####################################################################################
-
-if __name__ == '__main__':
-    
-    HH = np.array([[-0.00690127-0.02906244j,  0.04874293-0.01083722j,  0.09196864-0.0122088j ],
-        [-0.01627338-0.00610797j,  0.01897904+0.04147513j,  0.06223828+0.06260392j],
-        [-0.05928316-0.01689963j, -0.02648653+0.03150305j, -0.00076173+0.05830637j]], dtype=np.complex128)
-
-    HV = np.array([[-0.00253268-0.00165899j, -0.00100378-0.00021214j, -0.00176983+0.00142684j],
-        [-0.00669271-0.00030713j,  0.0008027 +0.00139327j,  0.00277857-0.00027674j],
-        [-0.00810817+0.00418459j, -0.00066056+0.0070381j ,  0.00743048+0.0025053j ]], dtype=np.complex128)
-
-    VH = np.array([[ 0.00194239+0.00601709j, -0.00533496+0.00506952j, -0.00875523+0.00340825j],
-        [ 0.00257253+0.00342182j,  0.00220111-0.00319489j, -0.00045381-0.00870172j],
-        [-0.00121244+0.00530288j,  0.0023198 +0.00225626j,  0.00704284-0.0050623j ]], dtype=np.complex128)
-
-    VV = np.array([[ 0.00247177-0.03491862j,  0.06061775-0.03294461j,  0.10629158-0.04479036j],
-        [-0.00996231+0.00387164j,  0.0372977 +0.02979462j,  0.08158179+0.03785375j],
-        [-0.05961524-0.00431815j, -0.01763038+0.03711419j,  0.00664863+0.05308216j]], dtype=np.complex128)
-
-
-    u_list = []
-    v_list = []
-    w_list = []
-    z_list = []
-    alpha_list = []
-    window_size = 3
-
-    def sliding_window(HH, HV, VH, VV, window_size):
-        rows,cols = HH.shape
-        for i in range(rows):
-            for j in range(0, cols, window_size):
-                hh = HH[i, j:j+window_size]
-                hv = HV[i, j:j+window_size]
-                vh = VH[i, j:j+window_size]
-                vv = VV[i, j:j+window_size]
-
-                yield hh, hv, vh, vv
-
-    pbar = tqdm(total = (HH.shape[0] * HH.shape[1])/ window_size, desc = 'Calculating Parameters', unit = 'windows')
-    for a,b,c,d in sliding_window(HH, HV, VH, VV, window_size):
-        cov = get_covariance(a,b,c,d)
-        cal = ainsworth_cal(cov)
-        print(cal.shape)
-        pbar.update(1)
-    pbar.close()
 
 
